@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Client</title>
+  <link rel="stylesheet" href="/css/ionic.min.css" media="screen" title="no title" charset="utf-8">
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    .wrap {
+      height: 100%;
+    }
+    input {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="bar bar-header">
+      <a href="index.html" class="button">home</a>
+      <h1 class="title">Socket.io Client</h1>
+    </div>
+    <div class="content padding has-header">
+      <div class="card">
+        <div id="statusDom" class="item item-text-wrap">
+          Connecting...
+        </div>
+      </div>
+
+        <div class="item item-toggle">
+          Auto send random data
+          <label class="toggle toggle-assertive">
+            <input id="sendBtn" type="checkbox">
+            <div class="track">
+              <div class="handle"></div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var currentUrl = window.location.href;
+    var urlRes = new RegExp('[a-z]+:\/\/[a-z]+:[0-9]+');
+    var needUrl = currentUrl.match(urlRes);
+    var socket = io.connect(needUrl);
+
+    socket.on('status', function(data) {
+      var statusDom = document.getElementById('statusDom');
+      var msgDom = document.getElementById('msgDom');
+      var submitBtn = document.getElementById('submitBtn');
+      var sendBtn = document.getElementById('sendBtn');
+      if (data.status) statusDom.innerHTML = 'Connect server success.^^';
+      else statusDom.innerHTML = 'Connect server failed.=,=';
+
+      sendBtn.onchange = function(e) {
+        console.log(sendBtn.checked);
+        if (sendBtn.checked) sendTestDataToServer();
+        else {
+          if (timer) clearTimeout(timer);
+        }
+      }
+
+      var timer = null;
+
+      function sendTestDataToServer() {
+        console.log('Sended');
+        socket.emit('save-client-msg', {
+          id: socket.id,
+          msg: parseInt(Math.random() * 4)
+        });
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(sendTestDataToServer, 100);
+      }
+    });
+  </script>
+</body>
+
+</html>
